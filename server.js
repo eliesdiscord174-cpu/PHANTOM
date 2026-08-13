@@ -199,10 +199,15 @@ async function saveSettings(patch) {
 const { DISCORD_WEBHOOK_URL } = process.env;
 
 async function notifyDiscordNewDownload(item) {
-  if (!DISCORD_WEBHOOK_URL) return;
+  if (!DISCORD_WEBHOOK_URL) {
+    console.log("ℹ️  DISCORD_WEBHOOK_URL non défini, notification ignorée.");
+    return;
+  }
+
+  console.log(`📤 Envoi de la notification Discord pour "${item.name}"...`);
 
   try {
-    await fetch(DISCORD_WEBHOOK_URL, {
+    const res = await fetch(DISCORD_WEBHOOK_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -223,10 +228,17 @@ async function notifyDiscordNewDownload(item) {
         ],
       }),
     });
+
+    if (!res.ok) {
+      const text = await res.text().catch(() => "");
+      console.error(`❌ Discord a refusé la notification (status ${res.status}):`, text);
+    } else {
+      console.log("✅ Notification Discord envoyée avec succès.");
+    }
   } catch (err) {
     // Une erreur d'envoi Discord ne doit jamais faire échouer l'ajout du
     // téléchargement lui-même : on log juste l'erreur.
-    console.error("Erreur lors de l'envoi de la notification Discord:", err);
+    console.error("❌ Erreur lors de l'envoi de la notification Discord:", err);
   }
 }
 
