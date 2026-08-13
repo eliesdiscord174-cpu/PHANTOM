@@ -193,6 +193,43 @@ async function saveSettings(patch) {
   return updated;
 }
 
+// ---- Notification Discord : annonce automatique dans un salon quand un ----
+// ---- nouveau téléchargement est ajouté depuis /admin. Optionnel : si     ----
+// ---- DISCORD_WEBHOOK_URL n'est pas défini, cette fonction ne fait rien.  ----
+const { DISCORD_WEBHOOK_URL } = process.env;
+
+async function notifyDiscordNewDownload(item) {
+  if (!DISCORD_WEBHOOK_URL) return;
+
+  try {
+    await fetch(DISCORD_WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        embeds: [
+          {
+            title: `🆕 ${item.name}`,
+            description: item.description || undefined,
+            color: 0xa855f7, // violet PHANTOM
+            fields: [
+              { name: "Version", value: item.version || "—", inline: true },
+              { name: "Catégorie", value: item.category || "—", inline: true },
+              { name: "Taille", value: item.size || "—", inline: true },
+            ],
+            image: item.image ? { url: item.image } : undefined,
+            timestamp: new Date().toISOString(),
+            footer: { text: "PHANTOM — Nouveau téléchargement disponible" },
+          },
+        ],
+      }),
+    });
+  } catch (err) {
+    // Une erreur d'envoi Discord ne doit jamais faire échouer l'ajout du
+    // téléchargement lui-même : on log juste l'erreur.
+    console.error("Erreur lors de l'envoi de la notification Discord:", err);
+  }
+}
+
 const app = express();
 
 // Render/Railway (et la plupart des hébergeurs) placent le site derrière un
@@ -577,7 +614,10 @@ app.post("/api/downloads", requireAdmin, async (req, res, next) => {
     const { data, error } = await supabase.from("downloads").insert(row).select("*").single();
     if (error) throw error;
 
-    res.status(201).json({ item: mapDownloadRow(data) });
+    const newItem = mapDownloadRow(data);
+    notifyDiscordNewDownload(newItem); // envoi en arrière-plan, ne bloque pas la réponse
+
+    res.status(201).json({ item: newItem });
   } catch (err) {
     next(err);
   }
