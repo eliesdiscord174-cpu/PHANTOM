@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PHANTOM — Mon profil</title>
+<style>
+  :root{
+    --bg:#0c0713; --purple-1:#a855f7; --purple-2:#7c3aed; --purple-glow:#c084fc;
+    --text-1:#f5f3f8; --text-2:#b9b0c7; --text-3:#7d7290;
+    --card-border: rgba(168,85,247,0.18);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background: var(--bg); color: var(--text-1); font-family:"Inter",sans-serif;
+    padding: 40px 56px 80px; position:relative; overflow-x:hidden;
+  }
+  .bg-glow{ position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+  .blob{ position:absolute; border-radius:50%; filter: blur(80px); opacity:0.35; }
+  .blob-1{ width:50vw; height:50vw; top:-15%; right:-10%; background: radial-gradient(circle, rgba(168,85,247,0.5), transparent 65%); }
+  .blob-2{ width:40vw; height:40vw; bottom:-10%; left:-10%; background: radial-gradient(circle, rgba(124,58,237,0.35), transparent 65%); }
+
+  .wrap{ position:relative; z-index:2; max-width:1100px; margin:0 auto; }
+  a.back{
+    color:var(--text-2); text-decoration:none; font-size:0.9rem; font-weight:600;
+    display:inline-flex; align-items:center; gap:6px; margin-bottom:20px;
+    padding:9px 14px; border-radius:10px;
+    transition: color .18s ease, background .18s ease, transform .18s ease;
+  }
+  a.back:hover{ color:var(--purple-glow); background:rgba(168,85,247,0.1); transform: translateX(-3px); }
+  a.back:active{ transform: translateX(0); }
+  a.back:hover{ color:var(--text-1); }
+
+  /* carte profil */
+  .profile-card{
+    background: rgba(255,255,255,0.03); border:1px solid var(--card-border);
+    border-radius:20px; overflow:hidden; margin-bottom:24px;
+  }
+  .banner{
+    height:100px;
+    background:
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.06) 0 1px, transparent 1px 26px),
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.06) 0 1px, transparent 1px 26px),
+      linear-gradient(120deg, var(--purple-2), var(--purple-glow));
+  }
+  .profile-body{ padding:0 28px 24px; position:relative; }
+  .avatar-lg{
+    width:88px; height:88px; border-radius:50%;
+    border:4px solid var(--bg); margin-top:-44px;
+    background: linear-gradient(135deg, var(--purple-glow), var(--purple-2));
+    display:flex; align-items:center; justify-content:center;
+    font-size:2rem; font-weight:800; overflow:hidden;
+  }
+  .avatar-lg img{ width:100%; height:100%; object-fit:cover; }
+  .profile-head{
+    display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:14px;
+    margin-top:10px;
+  }
+  .profile-head h1{ font-size:1.3rem; margin-bottom:2px; }
+  .profile-head .handle{ color:var(--text-3); font-size:0.88rem; }
+  .discord-badge{
+    display:inline-flex; align-items:center; gap:6px; margin-top:10px;
+    background: rgba(168,85,247,0.1); border:1px solid rgba(168,85,247,0.3);
+    color: var(--purple-glow); font-size:0.78rem; font-weight:600;
+    padding:6px 12px; border-radius:999px;
+  }
+  .logout-btn{
+    display:flex; align-items:center; gap:8px;
+    background: rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1);
+    color: var(--text-1); font-weight:700; font-size:0.88rem;
+    padding:10px 18px; border-radius:10px; cursor:pointer;
+  }
+  .logout-btn:hover{ background: rgba(255,255,255,0.08); }
+
+  .stats-row{
+    display:grid; grid-template-columns: repeat(4, 1fr);
+    border-top:1px solid rgba(255,255,255,0.06); margin-top:22px; padding-top:22px;
+    text-align:center; gap:10px;
+  }
+  .stats-row .stat svg{ color: var(--purple-glow); margin-bottom:6px; }
+  .stats-row .stat .value{ font-size:1.2rem; font-weight:800; }
+  .stats-row .stat .label{ color:var(--text-3); font-size:0.78rem; margin-top:2px; }
+
+  /* historique */
+  .section-title{
+    display:flex; align-items:center; gap:8px;
+    font-size:1.05rem; font-weight:700; margin-bottom:14px;
+  }
+  .history-card{
+    background: rgba(255,255,255,0.03); border:1px solid var(--card-border);
+    border-radius:16px; padding:16px;
+  }
+  .history-item{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px; border-radius:12px; margin-bottom:8px;
+    background: rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05);
+  }
+  .history-item:last-child{ margin-bottom:0; }
+  .history-left{ display:flex; align-items:center; gap:12px; }
+  .thumb{
+    width:40px; height:40px; border-radius:10px; flex-shrink:0;
+    background: linear-gradient(135deg, var(--purple-2), var(--purple-glow));
+    display:flex; align-items:center; justify-content:center; font-size:1rem;
+  }
+  .history-name{ font-size:0.9rem; font-weight:600; }
+  .history-time{ color:var(--text-3); font-size:0.76rem; margin-top:2px; display:flex; align-items:center; gap:4px; }
+  .redl-btn{
+    width:34px; height:34px; border-radius:9px;
+    background: rgba(168,85,247,0.12); border:1px solid rgba(168,85,247,0.3);
+    color: var(--purple-glow); display:flex; align-items:center; justify-content:center;
+    text-decoration:none; cursor:pointer; padding:0;
+  }
+  .redl-btn:hover{ background: rgba(168,85,247,0.2); }
+  .redl-btn:disabled{ opacity:0.5; cursor:default; }
+  .empty{ color:var(--text-3); font-size:0.88rem; text-align:center; padding:24px; }
+</style>
+</head>
+<body>
+  <div class="bg-glow"><div class="blob blob-1"></div><div class="blob blob-2"></div></div>
+
+  <div class="wrap">
+    <a href="/" class="back">← Retour à l'accueil</a>
+
+    <div class="profile-card">
+      <div class="banner"></div>
+      <div class="profile-body">
+        <div class="avatar-lg" id="avatarLg">?</div>
+        <div class="profile-head">
+          <div>
+            <h1 id="profileName">—</h1>
+            <div class="handle" id="profileHandle">@—</div>
+            <div class="discord-badge">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M20.3 4.4a17.6 17.6 0 0 0-4.4-1.4l-.2.4a13 13 0 0 1 3.9 1.9 15.5 15.5 0 0 0-13.2 0 13 13 0 0 1 3.9-1.9l-.2-.4a17.6 17.6 0 0 0-4.4 1.4C2.6 8.3 2 12.3 2.2 16.2a17.7 17.7 0 0 0 5.3 2.6l.7-1.1a11 11 0 0 1-1.7-.8l.4-.3a12.6 12.6 0 0 0 10.2 0l.4.3a11 11 0 0 1-1.7.8l.7 1.1a17.6 17.6 0 0 0 5.3-2.6c.3-4.5-.5-8.4-1.5-11.8ZM9 14.4c-.8 0-1.5-.8-1.5-1.7 0-1 .6-1.7 1.5-1.7s1.5.8 1.5 1.7-.7 1.7-1.5 1.7Zm6 0c-.8 0-1.5-.8-1.5-1.7 0-1 .6-1.7 1.5-1.7s1.5.8 1.5 1.7-.7 1.7-1.5 1.7Z"/></svg>
+              Compte Discord lié
+            </div>
+          </div>
+          <button class="logout-btn" id="logoutBtn">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+            Déconnexion
+          </button>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            <div class="value" id="statDownloads">0</div>
+            <div class="label">Téléchargements</div>
+          </div>
+          <div class="stat">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <div class="value" id="statReviews">0</div>
+            <div class="label">Avis publié</div>
+          </div>
+          <div class="stat">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>
+            <div class="value" id="statFavorites">0</div>
+            <div class="label">Favoris</div>
+          </div>
+          <div class="stat">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+            <div class="value" id="statJoined">—</div>
+            <div class="label">Membre depuis</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">
+      <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="var(--purple-glow)" stroke-width="2"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>
+      Historique de téléchargements
+    </div>
+    <div class="history-card">
+      <div id="historyList"><p class="empty">Chargement…</p></div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await fetch('/auth/logout', { method: 'POST' });
+      window.location.href = '/';
+    });
+
+    function timeAgo(iso){
+      const diffMs = Date.now() - new Date(iso).getTime();
+      const h = Math.floor(diffMs / 3600000);
+      if (h < 1) return "à l'instant";
+      if (h < 24) return `il y a ${h} h`;
+      const j = Math.floor(h / 24);
+      return `il y a ${j} j`;
+    }
+
+    function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    fetch('/api/profile')
+      .then(r => r.json())
+      .then(({ user, stats, history }) => {
+        document.getElementById('profileName').textContent = user.username;
+        document.getElementById('profileHandle').textContent = '@' + user.username;
+
+        const avatarLg = document.getElementById('avatarLg');
+        if (user.avatar) {
+          avatarLg.innerHTML = `<img src="${user.avatar}" alt="${user.username}">`;
+        } else {
+          avatarLg.textContent = user.username[0].toUpperCase();
+        }
+
+        document.getElementById('statDownloads').textContent = stats.downloadsCount;
+        document.getElementById('statReviews').textContent = stats.reviewsCount;
+        document.getElementById('statFavorites').textContent = stats.favoritesCount;
+        document.getElementById('statJoined').textContent = new Date(user.joinedAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+
+        const listEl = document.getElementById('historyList');
+        if (!history.length) {
+          listEl.innerHTML = '<p class="empty">Tu n\'as encore rien téléchargé. Direction <a href="/downloads" style="color:var(--purple-glow)">les téléchargements</a> !</p>';
+          return;
+        }
+        listEl.innerHTML = history.map(h => `
+          <div class="history-item">
+            <div class="history-left">
+              <div class="thumb">📦</div>
+              <div>
+                <div class="history-name">${escapeHtml(h.name)}</div>
+                <div class="history-time">🕒 ${timeAgo(h.timestamp)}</div>
+              </div>
+            </div>
+            <button class="redl-btn" data-id="${h.downloadId}" data-name="${escapeHtml(h.name)}" title="Retélécharger">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            </button>
+          </div>
+        `).join('');
+
+        // Retélécharger directement depuis l'historique, sans passer par la fiche.
+        listEl.querySelectorAll('.redl-btn').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            const id = btn.dataset.id;
+            const name = btn.dataset.name;
+            btn.disabled = true;
+            try {
+              const r = await fetch(`/api/downloads/${id}/click`, { method: 'POST' });
+              if (!r.ok) throw new Error('not found');
+              const data = await r.json();
+              if (data.url && data.url !== '#') {
+                const a = document.createElement('a');
+                a.href = data.url;
+                a.download = name || '';
+                a.rel = 'noopener';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+              }
+            } catch (e) {
+              alert("Ce fichier n'est plus disponible.");
+            } finally {
+              btn.disabled = false;
+            }
+          });
+        });
+      });
+  </script>
+</body>
+</html>

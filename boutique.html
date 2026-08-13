@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PHANTOM — Boutique</title>
+<script>document.documentElement.setAttribute('data-theme', localStorage.getItem('phantom-theme') || 'dark');</script>
+<style>
+  :root{
+    --bg:#0c0713; --bg-2:#120a1c;
+    --purple-1:#a855f7; --purple-2:#7c3aed; --purple-glow:#c084fc;
+    --text-1:#f5f3f8; --text-2:#b9b0c7; --text-3:#7d7290;
+    --card-bg: rgba(255,255,255,0.03);
+    --card-border: rgba(168,85,247,0.18);
+    --radius:16px;
+  }
+  html[data-theme="light"]{
+    --bg:#f4f1fb; --bg-2:#ffffff;
+    --purple-1:#7c3aed; --purple-2:#6d28d9; --purple-glow:#9333ea;
+    --text-1:#1e1b2e; --text-2:#5b5570; --text-3:#8b84a0;
+    --card-bg: #ffffff;
+    --card-border: rgba(124,58,237,0.15);
+  }
+  html[data-theme="light"] .top-links a{ background:#fff; box-shadow:0 1px 3px rgba(30,20,60,0.06); }
+  html[data-theme="light"] .icon-btn,
+  html[data-theme="light"] .search-box,
+  html[data-theme="light"] .sort-box{
+    background:#fff; border-color: rgba(124,58,237,0.15);
+    box-shadow: 0 1px 3px rgba(30,20,60,0.06);
+  }
+  html[data-theme="light"] nav a.active{
+    box-shadow: 0 4px 14px rgba(124,58,237,0.25);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg); color:var(--text-1);
+    font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    position:relative; overflow-x:hidden;
+  }
+  main{ display:block; padding:48px 56px 100px; position:relative; z-index:1; }
+
+  /* ambient background glow, cohérent avec le reste du site */
+  .bg-glow{ position:fixed; inset:0; z-index:0; pointer-events:none; overflow:hidden; }
+  .blob{ position:absolute; border-radius:50%; filter:blur(80px); opacity:0.5; }
+  .blob-a{
+    width:55vw; height:55vw; top:-25%; left:-15%;
+    background:radial-gradient(circle, rgba(168,85,247,0.55), transparent 65%);
+  }
+  .blob-b{
+    width:40vw; height:40vw; bottom:-20%; right:-10%;
+    background:radial-gradient(circle, rgba(124,58,237,0.35), transparent 65%);
+  }
+
+  .page{ position:relative; z-index:1; }
+
+  /* header */
+  header{
+    position:relative; z-index:10;
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 22px 56px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    backdrop-filter: blur(6px);
+  }
+  .logo{
+    display:flex; align-items:center; gap:10px;
+    font-weight:800; letter-spacing:0.5px; font-size:1.05rem;
+    text-decoration:none; color: var(--text-1);
+    transition: opacity .18s ease, transform .18s ease;
+  }
+  .logo:hover{ opacity:0.85; transform: translateY(-1px); }
+  .logo:active{ transform: translateY(0); }
+  .logo-mark{
+    width:28px; height:28px; object-fit:contain; display:block;
+    filter: drop-shadow(0 0 8px rgba(168,85,247,0.6));
+    transition: filter .18s ease;
+  }
+  .logo:hover .logo-mark{ filter: drop-shadow(0 0 14px rgba(168,85,247,0.85)); }
+  nav{display:flex; gap:6px;}
+  nav a{
+    display:flex; align-items:center; gap:6px;
+    color: var(--text-2); text-decoration:none; font-size:0.92rem; font-weight:500;
+    padding:9px 16px; border-radius:10px; transition: all .15s ease;
+  }
+  nav a:hover{ color: var(--text-1); background: rgba(255,255,255,0.04); }
+  nav a.active{
+    color:#fff; background: linear-gradient(135deg, var(--purple-2), #6d28d9);
+    box-shadow: 0 4px 18px rgba(124,58,237,0.4);
+  }
+  .header-actions{display:flex; align-items:center; gap:10px;}
+  .icon-btn{
+    width:38px; height:38px; border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);
+    color: var(--text-2); cursor:pointer; position:relative;
+    transition: background .15s ease, transform .15s ease, color .15s ease;
+  }
+  .icon-btn:hover{ background: rgba(255,255,255,0.06); color: var(--text-1); transform: translateY(-1px); }
+  .icon-btn svg{ width:17px; height:17px; }
+  .profile{
+    display:flex; align-items:center; gap:8px; padding:6px 12px 6px 6px;
+    border-radius:12px; background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06);
+    cursor:pointer; position:relative;
+  }
+  .avatar{
+    width:26px; height:26px; border-radius:50%;
+    background: linear-gradient(135deg, var(--purple-glow), var(--purple-2));
+    display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700;
+    overflow:hidden;
+  }
+  .avatar img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .profile-name{ font-size:0.88rem; font-weight:600; }
+  .btn-login svg{ flex-shrink:0; }
+  .admin-badge{
+    display:none; align-items:center; gap:6px;
+    color: var(--purple-glow); text-decoration:none; font-size:0.85rem; font-weight:600;
+    padding:9px 14px; border-radius:10px; border:1px solid rgba(168,85,247,0.3);
+    background: rgba(168,85,247,0.08);
+  }
+  .profile-menu{
+    position:absolute; top:calc(100% + 8px); right:0; min-width:170px;
+    background: rgba(18,10,26,0.97); border:1px solid var(--card-border);
+    border-radius:12px; padding:6px; display:none; flex-direction:column;
+    box-shadow: 0 14px 40px rgba(0,0,0,0.5); backdrop-filter: blur(12px); z-index:20;
+  }
+  html[data-theme="light"] .profile-menu{
+    background: #ffffff; box-shadow: 0 14px 40px rgba(30,20,60,0.15);
+  }
+  .profile-menu.open{ display:flex; }
+  .profile-menu button, .profile-menu a{
+    display:flex; align-items:center; gap:8px; width:100%; text-align:left;
+    background:none; border:none; color:var(--text-2); font-size:0.85rem;
+    padding:9px 10px; border-radius:8px; cursor:pointer; text-decoration:none;
+  }
+  .profile-menu button:hover, .profile-menu a:hover{ background: rgba(255,255,255,0.06); color:var(--text-1); }
+  .profile-menu .logout{ color:#f87171; }
+  .profile-menu .logout:hover{ background: rgba(239,68,68,0.1); color:#f87171; }
+  .btn-login{
+    display:flex; align-items:center; gap:8px;
+    background: linear-gradient(135deg, var(--purple-glow), var(--purple-2));
+    color:#fff; border:none; padding:10px 18px; border-radius:11px;
+    font-weight:700; font-size:0.9rem; cursor:pointer;
+    box-shadow: 0 6px 20px rgba(124,58,237,0.4);
+  }
+
+  /* recherche globale (Ctrl+K) */
+  .search-modal-overlay{
+    position:fixed; inset:0; z-index:200;
+    background: rgba(8,4,14,0.6); backdrop-filter: blur(4px);
+    display:none; align-items:flex-start; justify-content:center;
+    padding-top:14vh;
+  }
+  .search-modal-overlay.open{ display:flex; }
+  .search-modal{
+    width:100%; max-width:560px; margin:0 20px;
+    background: var(--bg-2, #120a1c); border:1px solid var(--card-border);
+    border-radius:16px; padding:18px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.5);
+  }
+  html[data-theme="light"] .search-modal{
+    background:#ffffff; box-shadow: 0 30px 80px rgba(30,20,60,0.2);
+  }
+  .search-modal-input{
+    display:flex; align-items:center; gap:12px;
+    color: var(--text-1); font-size:1.02rem;
+  }
+  .search-modal-input svg{ flex:none; color: var(--text-3); }
+  .search-modal-input input{
+    flex:1; background:transparent; border:none; outline:none;
+    color: var(--text-1); font-size:1.02rem; font-family:inherit;
+  }
+  .search-modal-input input::placeholder{ color: var(--text-3); }
+  .search-modal-esc{
+    flex:none; font-size:0.75rem; font-weight:600; color: var(--purple-glow);
+    border:1px solid rgba(168,85,247,0.35); background: rgba(168,85,247,0.1);
+    padding:4px 10px; border-radius:8px;
+  }
+  .search-modal-hint{
+    margin-top:16px; padding-top:14px; border-top:1px solid var(--card-border);
+    display:flex; align-items:center; gap:8px;
+    color: var(--text-3); font-size:0.85rem;
+  }
+  .search-modal-hint kbd{ color: var(--text-1); font-weight:700; font-family:inherit; }
+  .search-modal-results{ margin-top:10px; display:flex; flex-direction:column; gap:4px; max-height:280px; overflow-y:auto; }
+  .search-modal-results a{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:10px 12px; border-radius:10px; color: var(--text-1);
+    text-decoration:none; font-size:0.92rem; font-weight:600;
+  }
+  .search-modal-results a:hover{ background: rgba(168,85,247,0.1); }
+  .search-modal-results a span.cat{ color: var(--text-3); font-size:0.78rem; font-weight:500; }
+  .search-modal-empty{ margin-top:10px; padding:14px 12px; color: var(--text-3); font-size:0.88rem; }
+
+  .eyebrow{
+    display:flex; align-items:center; gap:8px;
+    color:var(--purple-glow); font-size:0.8rem; font-weight:700;
+    letter-spacing:0.08em; text-transform:uppercase; margin-bottom:14px;
+  }
+  .eyebrow svg{ width:13px; height:13px; }
+  h1{ font-size:2.6rem; font-weight:800; margin-bottom:10px; letter-spacing:-0.02em; }
+  .subtitle{ color:var(--text-2); font-size:1rem; line-height:1.6; max-width:640px; margin-bottom:30px; }
+
+  .top-links{ display:flex; gap:12px; margin-bottom:36px; flex-wrap:wrap; }
+  .top-links a{
+    color:var(--text-1); text-decoration:none; font-size:0.85rem; font-weight:600;
+    display:inline-flex; align-items:center; gap:6px;
+    background:var(--card-bg); border:1px solid var(--card-border);
+    border-radius:10px; padding:9px 16px;
+    transition: background .18s ease, border-color .18s ease, color .18s ease, transform .18s ease, box-shadow .18s ease;
+  }
+  .top-links a:hover{
+    color:var(--purple-glow); border-color:var(--purple-glow); background:rgba(168,85,247,0.1);
+    transform: translateY(-2px); box-shadow: 0 6px 16px rgba(124,58,237,0.25);
+  }
+  .top-links a:active{ transform: translateY(0); }
+
+  /* grille de produits (utilisée dès qu'il y en a en base) */
+  .shop-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:22px; }
+  .product-card{
+    background:var(--card-bg); border:1px solid var(--card-border);
+    border-radius:var(--radius); overflow:hidden;
+    display:flex; flex-direction:column;
+    transition:transform .18s ease, border-color .18s ease;
+  }
+  .product-card:hover{ transform:translateY(-3px); border-color:rgba(168,85,247,0.4); }
+  .product-thumb{
+    width:100%; aspect-ratio:16/10;
+    background:linear-gradient(135deg, rgba(168,85,247,0.25), rgba(124,58,237,0.15));
+  }
+  .product-thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .product-body{ padding:16px 18px 18px; display:flex; flex-direction:column; gap:8px; flex:1; }
+  .product-body h3{ font-size:1.05rem; font-weight:700; }
+  .product-desc{ color:var(--text-2); font-size:0.85rem; line-height:1.4; }
+  .product-footer{
+    margin-top:auto; padding-top:12px; display:flex; align-items:center; justify-content:space-between;
+  }
+  .product-price{ font-size:1.1rem; font-weight:800; color:var(--purple-glow); }
+  .product-buy{
+    background:linear-gradient(135deg, var(--purple-glow), var(--purple-2));
+    color:#fff; border:none; padding:9px 16px; border-radius:9px;
+    font-weight:700; font-size:0.85rem; cursor:pointer;
+  }
+
+  /* état vide, comme sur la maquette */
+  .empty-state{
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:120px 20px 60px;
+    color:var(--text-3);
+  }
+  .empty-icon{
+    width:52px; height:52px; margin-bottom:22px; color:var(--purple-glow);
+    opacity:0.9;
+  }
+  .empty-state h2{ font-size:1.2rem; font-weight:700; color:var(--text-1); margin-bottom:8px; }
+  .empty-state p{ font-size:0.95rem; color:var(--text-3); }
+</style>
+</head>
+<body>
+  <div class="bg-glow">
+    <div class="blob blob-a"></div>
+    <div class="blob blob-b"></div>
+  </div>
+
+  <header>
+    <a href="/" class="logo">
+      <img src="/assets/logo.png" alt="PHANTOM" class="logo-mark">
+      PHANTOM
+    </a>
+    <nav>
+      <a href="/">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>
+        Accueil
+      </a>
+      <a href="/downloads">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+        Téléchargements
+      </a>
+      <a href="/boutique" class="active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M4 4h16l-1.5 9h-13z"/><path d="M4 4 3 2"/><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/></svg>
+        Boutique
+      </a>
+      <a href="/actualites">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8M8 13h5"/></svg>
+        Actualités
+      </a>
+    </nav>
+    <div class="header-actions">
+      <div class="icon-btn" id="searchTrigger">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      </div>
+      <div class="icon-btn" id="themeToggle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+      </div>
+      <a href="/admin" class="admin-badge" id="adminBadge">⚙ Admin</a>
+      <div class="profile" id="profileBlock" style="display:none;">
+        <div class="avatar" id="avatarWrap">E</div>
+        <span class="profile-name">E ▾</span>
+        <div class="profile-menu" id="profileMenu">
+          <a href="/profile">👤 Mon profil</a>
+          <a href="/downloads">📥 Téléchargements</a>
+          <button type="button" class="logout" id="logoutBtn">🚪 Se déconnecter</button>
+        </div>
+      </div>
+      <button class="btn-login" id="loginBtn">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M20.3 4.4a17.6 17.6 0 0 0-4.4-1.4l-.2.4a13 13 0 0 1 3.9 1.9 15.5 15.5 0 0 0-13.2 0 13 13 0 0 1 3.9-1.9l-.2-.4a17.6 17.6 0 0 0-4.4 1.4C2.6 8.3 2 12.3 2.2 16.2a17.7 17.7 0 0 0 5.3 2.6l.7-1.1a11 11 0 0 1-1.7-.8l.4-.3a12.6 12.6 0 0 0 10.2 0l.4.3a11 11 0 0 1-1.7.8l.7 1.1a17.6 17.6 0 0 0 5.3-2.6c.3-4.5-.5-8.4-1.5-11.8ZM9 14.4c-.8 0-1.5-.8-1.5-1.7 0-1 .6-1.7 1.5-1.7s1.5.8 1.5 1.7-.7 1.7-1.5 1.7Zm6 0c-.8 0-1.5-.8-1.5-1.7 0-1 .6-1.7 1.5-1.7s1.5.8 1.5 1.7-.7 1.7-1.5 1.7Z"/></svg>
+        Connexion
+      </button>
+    </div>
+  </header>
+
+  <div class="search-modal-overlay" id="searchOverlay">
+    <div class="search-modal">
+      <div class="search-modal-input">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="text" id="searchModalInput" placeholder="Rechercher une ressource, une actualité, une page..." autocomplete="off">
+        <span class="search-modal-esc">Échap</span>
+      </div>
+      <div id="searchModalResults" class="search-modal-results"></div>
+      <div class="search-modal-hint">
+        <span>⌘</span> Astuce : ouvre cette recherche n'importe où avec&nbsp;<kbd>Ctrl+K</kbd>
+      </div>
+    </div>
+  </div>
+
+  <main>
+  <div class="page">
+    <div class="eyebrow">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg>
+      Boutique
+    </div>
+    <h1>Boutique</h1>
+    <p class="subtitle">Comptes et clés livrés instantanément après paiement, sur ta page « Mes achats ». Paiement sécurisé par Stripe.</p>
+
+    <div id="shopContent">
+      <div class="empty-state">
+        <div class="empty-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="52" height="52"><path d="M12.6 2.6 21 11l-9.4 9.4a2 2 0 0 1-2.8 0L3 14.6a2 2 0 0 1 0-2.8L12.4 2.4a2 2 0 0 1 1.4-.6H20a1 1 0 0 1 1 1v5.4"/><circle cx="15.7" cy="7.7" r="1.4"/></svg>
+        </div>
+        <h2>Chargement…</h2>
+      </div>
+    </div>
+  </div>
+  </main>
+
+  <script>
+    const SUN_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+    const MOON_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>';
+
+    const themeToggle = document.getElementById('themeToggle');
+    function applyTheme(theme){
+      document.documentElement.setAttribute('data-theme', theme);
+      themeToggle.innerHTML = theme === 'light' ? MOON_ICON : SUN_ICON;
+      localStorage.setItem('phantom-theme', theme);
+    }
+    applyTheme(localStorage.getItem('phantom-theme') || 'dark');
+    themeToggle.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+      applyTheme(current === 'light' ? 'dark' : 'light');
+    });
+
+    // ---- Recherche globale (Ctrl+K / Cmd+K) ----
+    (function(){
+      const overlay = document.getElementById('searchOverlay');
+      const input = document.getElementById('searchModalInput');
+      const results = document.getElementById('searchModalResults');
+      const trigger = document.getElementById('searchTrigger');
+
+      const staticPages = [
+        { name: 'Accueil', url: '/', cat: 'Page' },
+        { name: 'Téléchargements', url: '/downloads', cat: 'Page' },
+        { name: 'Mon profil', url: '/profile', cat: 'Page' },
+      ];
+
+      let downloadsCache = null;
+      async function getDownloads(){
+        if (downloadsCache) return downloadsCache;
+        try {
+          const res = await fetch('/api/downloads');
+          const data = await res.json();
+          downloadsCache = data.downloads || [];
+        } catch {
+          downloadsCache = [];
+        }
+        return downloadsCache;
+      }
+
+      function openSearch(){
+        overlay.classList.add('open');
+        input.value = '';
+        renderResults('');
+        setTimeout(() => input.focus(), 10);
+      }
+      function closeSearch(){
+        overlay.classList.remove('open');
+      }
+
+      async function renderResults(query){
+        const q = query.trim().toLowerCase();
+        const downloads = await getDownloads();
+
+        const pageMatches = staticPages.filter(p => !q || p.name.toLowerCase().includes(q));
+        const dlMatches = downloads.filter(d => !q || d.name.toLowerCase().includes(q) || (d.category || '').toLowerCase().includes(q));
+
+        const items = [
+          ...pageMatches.map(p => `<a href="${p.url}"><span>${p.name}</span><span class="cat">${p.cat}</span></a>`),
+          ...dlMatches.slice(0, 8).map(d => `<a href="/downloads/${d.id}"><span>${escapeSearchHtml(d.name)}</span><span class="cat">${escapeSearchHtml(d.category || '')}</span></a>`),
+        ];
+
+        results.innerHTML = items.length
+          ? items.join('')
+          : `<div class="search-modal-empty">Aucun résultat pour « ${escapeSearchHtml(query)} ».</div>`;
+      }
+
+      function escapeSearchHtml(s){
+        return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      }
+
+      trigger.addEventListener('click', openSearch);
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) closeSearch(); });
+      overlay.querySelector('.search-modal-esc').addEventListener('click', closeSearch);
+      input.addEventListener('input', () => renderResults(input.value));
+
+      document.addEventListener('keydown', (e) => {
+        const isK = e.key === 'k' || e.key === 'K';
+        if ((e.ctrlKey || e.metaKey) && isK) {
+          e.preventDefault();
+          overlay.classList.contains('open') ? closeSearch() : openSearch();
+        } else if (e.key === 'Escape' && overlay.classList.contains('open')) {
+          closeSearch();
+        }
+      });
+    })();
+
+    const loginBtn = document.getElementById('loginBtn');
+    const profileBlock = document.getElementById('profileBlock');
+    const profileMenu = document.getElementById('profileMenu');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const adminBadge = document.getElementById('adminBadge');
+    const avatarWrap = document.getElementById('avatarWrap');
+
+    loginBtn.addEventListener('click', () => {
+      window.location.href = '/auth/discord';
+    });
+
+    profileBlock.addEventListener('click', (e) => {
+      e.stopPropagation();
+      profileMenu.classList.toggle('open');
+    });
+    document.addEventListener('click', () => profileMenu.classList.remove('open'));
+
+    logoutBtn.addEventListener('click', async () => {
+      await fetch('/auth/logout', { method: 'POST' });
+      window.location.href = '/';
+    });
+
+    function renderConnected(user){
+      loginBtn.style.display = 'none';
+      profileBlock.style.display = 'flex';
+
+      if (user.avatar) {
+        avatarWrap.innerHTML = `<img src="${user.avatar}" alt="${user.username}">`;
+      } else {
+        avatarWrap.textContent = user.username[0].toUpperCase();
+      }
+      profileBlock.querySelector('.profile-name').textContent = user.username + ' ▾';
+
+      if (user.isAdmin) {
+        adminBadge.style.display = 'flex';
+      }
+    }
+
+    function renderDisconnected(){
+      loginBtn.style.display = 'flex';
+      profileBlock.style.display = 'none';
+    }
+
+    fetch('/api/me')
+      .then(r => r.json())
+      .then(({ user }) => {
+        if (user) renderConnected(user);
+        else renderDisconnected();
+      })
+      .catch(() => renderDisconnected());
+
+    const shopContent = document.getElementById('shopContent');
+
+    function escapeHtml(str){
+      const div = document.createElement('div');
+      div.textContent = String(str == null ? '' : str);
+      return div.innerHTML;
+    }
+
+    const TAG_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="52" height="52"><path d="M12.6 2.6 21 11l-9.4 9.4a2 2 0 0 1-2.8 0L3 14.6a2 2 0 0 1 0-2.8L12.4 2.4a2 2 0 0 1 1.4-.6H20a1 1 0 0 1 1 1v5.4"/><circle cx="15.7" cy="7.7" r="1.4"/></svg>';
+
+    function renderEmpty(){
+      shopContent.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">${TAG_ICON}</div>
+          <h2>La boutique est vide pour le moment</h2>
+          <p>Les premiers produits arrivent bientôt. Reviens vite !</p>
+        </div>
+      `;
+    }
+
+    function renderProducts(products){
+      shopContent.innerHTML = `
+        <div class="shop-grid">
+          ${products.map(p => `
+            <div class="product-card">
+              <div class="product-thumb">
+                ${p.image ? `<img src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}">` : ''}
+              </div>
+              <div class="product-body">
+                <h3>${escapeHtml(p.name)}</h3>
+                <p class="product-desc">${escapeHtml(p.description || '')}</p>
+                <div class="product-footer">
+                  <span class="product-price">${escapeHtml(p.price)}</span>
+                  <button class="product-buy" data-id="${p.id}">Acheter</button>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // Charge le vrai catalogue depuis le serveur. Vide tant qu'aucun produit
+    // n'a été ajouté côté admin — l'état vide ci-dessous reflète cette réalité.
+    function loadProducts(){
+      fetch('/api/products')
+        .then(r => r.json())
+        .then(({ products }) => {
+          if (!products || !products.length) renderEmpty();
+          else renderProducts(products);
+        })
+        .catch(() => renderEmpty());
+    }
+
+    loadProducts();
+  </script>
+</body>
+</html>
