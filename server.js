@@ -20,6 +20,7 @@ const path = require("path");
 require("dotenv").config();
 
 const supabase = require("./lib/supabase");
+const { startPollBot, postToolPoll } = require("./poll-bot");
 
 const {
   DISCORD_CLIENT_ID,
@@ -638,6 +639,7 @@ app.post("/api/downloads", requireAdmin, async (req, res, next) => {
 
     const newItem = mapDownloadRow(data);
     notifyDiscordNewDownload(newItem); // envoi en arrière-plan, ne bloque pas la réponse
+    postToolPoll(newItem).catch((err) => console.error("Erreur lors de la publication du sondage :", err));
 
     res.status(201).json({ item: newItem });
   } catch (err) {
@@ -885,3 +887,5 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`✅ Serveur lancé sur http://localhost:${PORT}`);
 });
+
+startPollBot();
