@@ -209,6 +209,7 @@ async function notifyDiscordNewDownload(item) {
   const name = String(item.name || "Nouvel outil").slice(0, 200);
 
   const payload = {
+    content: "||@everyone||",
     embeds: [
       {
         title: `🆕 Nouvel outil disponible sur le site ! — ${name}`,
