@@ -206,21 +206,24 @@ async function notifyDiscordNewDownload(item) {
 
   console.log(`📤 Envoi de la notification Discord pour "${item.name}"...`);
 
-  // Discord est strict : titre <= 256 caractères, description <= 4096.
-  const safeTitle = String(item.name || "Nouveau téléchargement").slice(0, 256);
-  const safeDescription = item.description ? String(item.description).slice(0, 4096) : undefined;
-
-  // On n'inclut l'image dans l'embed que si c'est une vraie URL http(s) —
-  // sinon Discord refuse tout le message (erreur 400) à cause de ce seul champ.
-  const isValidImageUrl = typeof item.image === "string" && /^https?:\/\/.+/i.test(item.image.trim());
+  const name = String(item.name || "Nouvel outil").slice(0, 200);
 
   const payload = {
     embeds: [
       {
-        title: `🆕 Nouvel outil disponible : ${safeTitle}`,
-        description: safeDescription,
+        title: `🆕 Nouvel outil disponible sur le site ! — ${name}`,
+        description:
+          `Nous sommes heureux de vous annoncer qu'un **nouvel outil ${name} est maintenant disponible directement sur notre site !** 🚀\n\n` +
+          `Vous pouvez dès maintenant accéder à l'outil depuis le site et profiter de ses fonctionnalités **rapidement et simplement**.\n\n` +
+          `🔹 **Nouvel outil disponible**\n` +
+          `🔹 **Accessible directement depuis le site**\n` +
+          `🔹 **Utilisation simple et rapide**\n` +
+          `🔹 **Aucune installation nécessaire**\n\n` +
+          `👉 **Rendez-vous sur notre site dès maintenant pour découvrir et utiliser le nouvel outil !**\n\n` +
+          `Nous travaillons constamment sur de **nouvelles fonctionnalités**, de **nouveaux outils** et diverses **améliorations** afin de vous proposer la meilleure expérience possible. 🔥\n\n` +
+          `N'hésitez pas à **tester l'outil** et à nous faire vos retours si vous rencontrez un problème ou si vous avez des suggestions.\n\n` +
+          `Merci à tous pour votre **soutien** et votre **confiance** envers **PHANTOM**. ❤️`,
         color: 0xa855f7, // violet PHANTOM
-        image: isValidImageUrl ? { url: item.image.trim() } : undefined,
         footer: { text: "PHANTOM" },
       },
     ],
