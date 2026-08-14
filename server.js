@@ -206,29 +206,22 @@ async function notifyDiscordNewDownload(item) {
 
   console.log(`📤 Envoi de la notification Discord pour "${item.name}"...`);
 
-  // Discord est strict sur les embeds : titre <= 256 caractères, description
-  // <= 4096, et chaque field.value doit être une chaîne NON VIDE.
-  const safeTitle = String(`🆕 ${item.name || "Nouveau téléchargement"}`).slice(0, 256);
+  // Discord est strict : titre <= 256 caractères, description <= 4096.
+  const safeTitle = String(item.name || "Nouveau téléchargement").slice(0, 256);
   const safeDescription = item.description ? String(item.description).slice(0, 4096) : undefined;
-  const safeField = (v) => {
-    const s = v == null ? "" : String(v).trim();
-    return s.length ? s.slice(0, 1024) : "—";
-  };
+
+  // On n'inclut l'image dans l'embed que si c'est une vraie URL http(s) —
+  // sinon Discord refuse tout le message (erreur 400) à cause de ce seul champ.
+  const isValidImageUrl = typeof item.image === "string" && /^https?:\/\/.+/i.test(item.image.trim());
 
   const payload = {
     embeds: [
       {
-        title: safeTitle,
+        title: `🆕 Nouvel outil disponible : ${safeTitle}`,
         description: safeDescription,
         color: 0xa855f7, // violet PHANTOM
-        fields: [
-          { name: "Version", value: safeField(item.version), inline: true },
-          { name: "Catégorie", value: safeField(item.category), inline: true },
-          { name: "Taille", value: safeField(item.size), inline: true },
-        ],
-        image: item.image ? { url: item.image } : undefined,
-        timestamp: new Date().toISOString(),
-        footer: { text: "PHANTOM — Nouveau téléchargement disponible" },
+        image: isValidImageUrl ? { url: item.image.trim() } : undefined,
+        footer: { text: "PHANTOM" },
       },
     ],
   };
