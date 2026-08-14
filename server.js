@@ -206,39 +206,52 @@ async function notifyDiscordNewDownload(item) {
 
   console.log(`📤 Envoi de la notification Discord pour "${item.name}"...`);
 
+  // Discord est strict sur les embeds : titre <= 256 caractères, description
+  // <= 4096, et chaque field.value doit être une chaîne NON VIDE.
+  const safeTitle = String(`🆕 ${item.name || "Nouveau téléchargement"}`).slice(0, 256);
+  const safeDescription = item.description ? String(item.description).slice(0, 4096) : undefined;
+  const safeField = (v) => {
+    const s = v == null ? "" : String(v).trim();
+    return s.length ? s.slice(0, 1024) : "—";
+  };
+
+  const payload = {
+    embeds: [
+      {
+        title: safeTitle,
+        description: safeDescription,
+        color: 0xa855f7, // violet PHANTOM
+        fields: [
+          { name: "Version", value: safeField(item.version), inline: true },
+          { name: "Catégorie", value: safeField(item.category), inline: true },
+          { name: "Taille", value: safeField(item.size), inline: true },
+        ],
+        image: item.image ? { url: item.image } : undefined,
+        timestamp: new Date().toISOString(),
+        footer: { text: "PHANTOM — Nouveau téléchargement disponible" },
+      },
+    ],
+  };
+
   try {
     const res = await fetch(DISCORD_WEBHOOK_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        embeds: [
-          {
-            title: `🆕 ${item.name}`,
-            description: item.description || undefined,
-            color: 0xa855f7, // violet PHANTOM
-            fields: [
-              { name: "Version", value: item.version || "—", inline: true },
-              { name: "Catégorie", value: item.category || "—", inline: true },
-              { name: "Taille", value: item.size || "—", inline: true },
-            ],
-            image: item.image ? { url: item.image } : undefined,
-            timestamp: new Date().toISOString(),
-            footer: { text: "PHANTOM — Nouveau téléchargement disponible" },
-          },
-        ],
-      }),
+      body: JSON.stringify(payload),
     });
 
     if (!res.ok) {
-      const text = await res.text().catch(() => "");
-      console.error(`❌ Discord a refusé la notification (status ${res.status}):`, text);
+      const text = await res.text().catch(() => "(pas de corps de réponse)");
+      console.error(`❌ Discord a refusé la notification (status ${res.status}).`);
+      console.error("Corps envoyé:", JSON.stringify(payload));
+      console.error("Réponse Discord:", text);
     } else {
       console.log("✅ Notification Discord envoyée avec succès.");
     }
   } catch (err) {
     // Une erreur d'envoi Discord ne doit jamais faire échouer l'ajout du
     // téléchargement lui-même : on log juste l'erreur.
-    console.error("❌ Erreur lors de l'envoi de la notification Discord:", err);
+    console.error("❌ Erreur réseau lors de l'envoi de la notification Discord:", err);
   }
 }
 
