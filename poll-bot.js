@@ -89,13 +89,13 @@ async function postToolPoll(item) {
 
   // 2) On envoie le message avec les boutons (compteurs à 0)
   const content =
-    `📊 **${item.name}** — vous en pensez quoi de ce nouveau **${item.name}** ? 👀\n\n` +
-    `On est tombés sur ce **${item.name}** récemment et on voulait simplement avoir votre avis dessus. ` +
+    `📊 **${item.name}** — vous en pensez quoi de ce nouveau Che@t ? 👀\n\n` +
+    `On est tombés sur ce Che@t récemment et on voulait simplement avoir votre avis dessus. ` +
     `Est-ce que vous le trouvez cool, intéressant et utile, ou au contraire vous ne voyez pas vraiment l'intérêt ? 🤔\n\n` +
     `Le but du sondage est juste de voir ce que vous en pensez, sans prise de tête. Que vous l'ayez déjà utilisé, ` +
-    `que vous l'ayez testé rapidement ou que vous connaissiez simplement ce **${item.name}**, n'hésitez pas à voter selon votre impression.\n\n` +
-    `💬 Et si vous voulez, dites aussi dans le chat ce qui vous plaît ou vous déplaît dans **${item.name}**. ` +
-    `Ça permettra de voir si, globalement, la communauté trouve ce nouveau **${item.name}** intéressant ou non. 👀🔥\n\n` +
+    `que vous l'ayez testé rapidement ou que vous connaissiez simplement ce Che@t, n'hésitez pas à voter selon votre impression.\n\n` +
+    `💬 Et si vous voulez, dites aussi dans le chat ce qui vous plaît ou vous déplaît dans Che@t. ` +
+    `Ça permettra de voir si, globalement, la communauté trouve ce nouveau Che@t intéressant ou non. 👀🔥\n\n` +
     `||@everyone||`;
 
   const message = await channel.send({
