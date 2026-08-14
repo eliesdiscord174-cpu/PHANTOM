@@ -56,15 +56,15 @@ function buildPollComponents(pollId, counts = { cool: 0, meh: 0, bad: 0 }) {
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId(`poll:${pollId}:cool`)
-      .setLabel(`👍 Cool (${counts.cool})`)
+      .setLabel(`🟢 🔥 Excellent (${counts.cool})`)
       .setStyle(ButtonStyle.Success),
     new ButtonBuilder()
       .setCustomId(`poll:${pollId}:meh`)
-      .setLabel(`🤷 Mitigé (${counts.meh})`)
+      .setLabel(`🟠 🤔 Bof (${counts.meh})`)
       .setStyle(ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId(`poll:${pollId}:bad`)
-      .setLabel(`👎 Pas cool (${counts.bad})`)
+      .setLabel(`🔴 💀 Pas ouf (${counts.bad})`)
       .setStyle(ButtonStyle.Danger)
   );
   return [row];
